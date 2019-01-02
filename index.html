@@ -75,6 +75,38 @@
                 o.y += o.speedY
             }
         }
+        o.反弹 = function() {
+            o.speedY *= -1
+        }
+        return o
+    }
+
+    var rectIntersects = function(a, b) {
+        var o = a
+        if (b.y > o.y && b.y < o.image.height + o.y) {
+            if (b.x > o.x && b.x < o.x + o.image.width) {
+                return true
+            }
+        }
+        return false
+    }
+
+    var Block = function() {
+        var image = imageFromPath('block.png')
+        var o = {
+            image: image,
+            x: 100,
+            y: 100,
+            w: 30,
+            h: 10,
+            alive: true,          
+        }
+        o.kill = function() {
+            o.alive = false
+        }
+        o.collide = function(b) {
+            return o.alive && (rectIntersects(o, b) || rectIntersects(b, o))
+        }    
         return o
     }
 
@@ -139,6 +171,7 @@
         var game = ShuGame()
         var paddle = Paddle()
         var ball = Ball()
+        var block = Block()
 
         game.registerAction('a', function() {
             paddle.moveLeft()
@@ -185,7 +218,13 @@
             // 判断相撞
             if (paddle.collide(ball)) {
                 // TODO： 调用函数 ball.反弹() 来实现
-                ball.speedY *= -1
+                ball.反弹()
+            }
+            // 判断 block 和 ball 相撞
+            if (block.collide(ball)) {
+                log('block collide')
+                block.kill()
+                ball.反弹()
             }
         }
 
@@ -193,6 +232,10 @@
             // game.context.drawImage(paddle.image, paddle.x, paddle.y)
             game.drawImage(paddle)
             game.drawImage(ball)
+            // draw block
+            if (block.alive) {
+                game.drawImage(block)
+            }            
         }
 
         // setInterval(function() {
